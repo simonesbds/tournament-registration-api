@@ -21,7 +21,10 @@ export const getTournaments = async (req, res) => {
       };
     }
 
-    const tournaments = await Tournament.find(query).sort("date").lean();
+    const tournaments = await Tournament.find(query)
+      .populate("store")
+      .sort("date")
+      .lean();
     res.json(tournaments);
   } catch (error) {
     console.error(error);
@@ -37,7 +40,7 @@ export const getTournamentById = async (req, res) => {
       return res.status(400).json({ message: "Invalid Tournament ID format" });
     }
 
-    const tournament = await Tournament.findById(id).lean();
+    const tournament = await Tournament.findById(id).populate("store").lean();
 
     if (!tournament) {
       return res.status(404).json({ message: "Tournament not found" });
