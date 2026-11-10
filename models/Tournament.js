@@ -10,9 +10,21 @@ const tournamentSchema = new mongoose.Schema(
       enum: ["Magic", "Pokemon", "Yu-Gi-Oh", "One Piece"],
     },
     date: { type: Date, required: true },
-    storeName: { type: String, required: true, trim: true },
-    maxPlayers: { type: Number, required: true, min: 2 },
+    maxPlayers: {
+      type: Number,
+      required: true,
+      min: 2,
+      validate: {
+        validator: Number.isInteger,
+        message: "maxPlayers must be an integer",
+      },
+    },
     entryFee: { type: Number, min: 0, default: 0 },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+    },
   },
   { timestamps: true },
 );
