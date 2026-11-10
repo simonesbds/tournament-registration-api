@@ -85,3 +85,63 @@ export const createTournament = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateTournament = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid Tournament ID format" });
+    }
+
+    const body = req.body ?? {};
+    const allowedFields = [
+      "name",
+      "game",
+      "date",
+      "maxPlayers",
+      "entryFee",
+      "store",
+    ];
+    const updates = {};
+
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No valid updates" });
+    }
+
+    if (updates.store !== undefined) {
+      if (!mongoose.isValidObjectId(updates.store)) {
+        return res.status(400).json({ message: "Invalid Store ID format" });
+      }
+
+      const storeExists = await Store.exists({ _id: updates.store });
+      if (!storeExists) {
+        return res.status(400).json({ message: "Store not found" });
+      }
+    }
+
+    const updatedTournament = await Tournament.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    }).populate("store", "name city address");
+
+    if (!updatedTournament) {
+      return res.status(404).json({ message: "Tournament not found" });
+    }
+
+    return res.status(200).json(updatedTournament);
+  } catch (error) {
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(400).json({ message: error.message });
+    }
+
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
