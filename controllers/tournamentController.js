@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Tournament from "../models/Tournament.js";
+import Store from "../models/Store.js";
 
 export const getTournaments = async (req, res) => {
   try {
@@ -44,6 +45,39 @@ export const getTournamentById = async (req, res) => {
 
     res.json(tournament);
   } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const createTournament = async (req, res) => {
+  try {
+    const { name, game, date, maxPlayers, entryFee, store } = req.body ?? {};
+
+    if (!mongoose.isValidObjectId(store)) {
+      return res.status(400).json({ message: "Invalid Store ID format" });
+    }
+
+    const storeExists = await Store.exists({ _id: store });
+    if (!storeExists) {
+      return res.status(400).json({ message: "Store not found" });
+    }
+
+    const newTournament = await Tournament.create({
+      name,
+      game,
+      date,
+      maxPlayers,
+      entryFee,
+      store,
+    });
+
+    return res.status(201).json(newTournament);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ message: error.message });
+    }
+
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
