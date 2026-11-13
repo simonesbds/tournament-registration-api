@@ -121,3 +121,19 @@ export const updateTournament = async (req, res) => {
 
   res.json(updatedTournament);
 };
+
+export const deleteTournament = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    throw new BadRequestError("Invalid Tournament ID format");
+  }
+
+  const deletedTournament = await Tournament.findByIdAndDelete(id);
+
+  if (!deletedTournament) {
+    throw new NotFoundError("Tournament not found");
+  }
+
+  res.status(204).end();
+};
