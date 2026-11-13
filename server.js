@@ -1,6 +1,7 @@
 import express from "express";
 import { connectDB } from "./config/db.js";
 import tournamentRoutes from "./routes/tournamentRoutes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/tournaments", tournamentRoutes);
+app.use(errorHandler);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
